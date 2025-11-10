@@ -1,8 +1,8 @@
 """
-FastAPI backend za Generator priča za djecu
+FastAPI pozadinska aplikacija za Generator priča za djecu.
 
-Ova aplikacija omogućava korisnicima da otpreme dječije crteže i generišu priče na bosanskom jeziku
-koristeći OpenRouter API sa Polaris Alpha modelom.
+Ova aplikacija omogućava korisnicima da otpreme dječje crteže i generiraju priče na bosanskom jeziku
+koristeći OpenRouter API s modelom Polaris Alpha.
 """
 
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
@@ -16,21 +16,21 @@ from typing import Optional
 import base64
 import openai
 
-# Load environment variables from .env file
+# Učitavanje varijabli okruženja iz .env datoteke
 from dotenv import load_dotenv
 load_dotenv()
 
-from story_generator import validate_image_path, get_story_prompt
+from story_generator import get_story_prompt
 
-app = FastAPI(title="Children's Story Generator API")
+app = FastAPI(title="API za Generator priča za djecu")
 
-# Mount static files
+# Povezivanje statičkih datoteka
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Set up templates
+# Postavljanje šablona (templates)
 templates = Jinja2Templates(directory="templates")
 
-# Create necessary directories if they don't exist
+# Kreiranje potrebnih direktorija ako ne postoje
 Path("uploads").mkdir(exist_ok=True)
 Path("static").mkdir(exist_ok=True)
 Path("templates").mkdir(exist_ok=True)
@@ -38,29 +38,29 @@ Path("templates").mkdir(exist_ok=True)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-    """Serve the main page for the web interface."""
+    """Prikazuje glavnu stranicu web interfejsa."""
     with open("templates/index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
 
-async def generate_story_with_gemini_api(image_data: bytes, mime_type: str, child_name: str, style: str, length: str) -> str:
-    """Generate a story using the OpenRouter API (Polaris Alpha model) from in-memory image data."""
+async def generate_story_with_openrouter_api(image_data: bytes, mime_type: str, child_name: str, style: str, length: str) -> str:
+    """Generira priču koristeći OpenRouter API (model Polaris Alpha) na osnovu podataka o slici iz memorije."""
     try:
-        # Configure OpenAI to use OpenRouter
+        # Konfiguracija OpenAI klijenta za korištenje OpenRoutera
         client = openai.AsyncOpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=os.environ.get("OPENROUTER_API_KEY"),
         )
 
-        # Encode the image to base64 for the API call
+        # Kodiranje slike u base64 format za API poziv
         image_base64 = base64.b64encode(image_data).decode('utf-8')
         
-        # Create the prompt
-        prompt = get_story_prompt(child_name, style, length, "the provided drawing")
+        # Kreiranje upita (prompta)
+        prompt = get_story_prompt(child_name, style, length, "priloženog crteža")
         
-        # Call the OpenRouter API with vision capabilities
+        # Pozivanje OpenRouter API-ja s mogućnošću obrade slika
         response = await client.chat.completions.create(
-            model="openrouter/polaris-alpha",  # Using Polaris Alpha model through OpenRouter
+            model="openrouter/polaris-alpha",  # Korištenje modela Polaris Alpha putem OpenRoutera
             messages=[
                 {
                     "role": "user",
@@ -81,6 +81,7 @@ async def generate_story_with_gemini_api(image_data: bytes, mime_type: str, chil
         return response.choices[0].message.content
 
     except Exception as e:
+        # Proslijeđuje izuzetak da se obradi na višem nivou
         raise e
 
 
@@ -91,23 +92,24 @@ async def generate_story(
     style: str = Form(...),
     length: str = Form(...)
 ):
-    """Generate a story based on an uploaded image and user preferences."""
-    # Validate inputs
+    """Generira priču na osnovu otpremljene slike i korisničkih postavki."""
+    # Validacija ulaznih podataka
     if not child_name.strip():
-        raise HTTPException(status_code=400, detail="Child's name cannot be empty")
+        raise HTTPException(status_code=400, detail="Ime djeteta ne može biti prazno.")
 
-    if style not in ["fairy tale", "sci-fi", "adventure", "mystery", "comedy", "everyday life"]:
-        raise HTTPException(status_code=400, detail="Invalid story style")
+    valid_styles = ["fairy tale", "sci-fi", "adventure", "mystery", "comedy", "everyday life"]
+    if style not in valid_styles:
+        raise HTTPException(status_code=400, detail="Nevažeći stil priče.")
 
     if length not in ["short", "long"]:
-        raise HTTPException(status_code=400, detail="Invalid story length")
+        raise HTTPException(status_code=400, detail="Nevažeća dužina priče.")
 
-    # Validate file type
+    # Validacija tipa datoteke
     file_extension = Path(image.filename).suffix.lower()
     if file_extension not in [".jpg", ".jpeg", ".png", ".bmp", ".webp"]:
-        raise HTTPException(status_code=400, detail="Unsupported image format")
+        raise HTTPException(status_code=400, detail="Nepodržan format slike.")
 
-    # Define MIME types
+    # Definisanje MIME tipova
     mime_type_map = {
         '.jpg': 'image/jpeg',
         '.jpeg': 'image/jpeg',
@@ -118,25 +120,25 @@ async def generate_story(
 
     mime_type = mime_type_map.get(file_extension)
     if not mime_type:
-        raise HTTPException(status_code=400, detail="Unsupported image format")
+        raise HTTPException(status_code=400, detail="Nepodržan format slike.")
 
     try:
-        # Read the image file content
+        # Čitanje sadržaja slikovne datoteke
         image_content = await image.read()
 
-        # Generate the story using the API-compatible function
-        story = await generate_story_with_gemini_api(image_content, mime_type, child_name, style, length)
+        # Generiranje priče pomoću API funkcije
+        story = await generate_story_with_openrouter_api(image_content, mime_type, child_name, style, length)
 
         return {"story": story}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating story: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Greška prilikom generiranja priče: {str(e)}")
 
 
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy"}
+    """Endpoint za provjeru statusa aplikacije (health check)."""
+    return {"status": "ok"}
 
 
 if __name__ == "__main__":

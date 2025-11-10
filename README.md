@@ -19,9 +19,9 @@ Ovaj alat pretvara dječije crteže u fantastične priče koristeći OpenRouter 
 ## Instalacija
 
 1. Klonirajte ili preuzmite ovaj repozitorij
-2. Instalirajte potrebne zavisnosti:
+2. Instalirajte potrebne zavisnosti koristeći UV:
    ```bash
-   pip install -r requirements.txt
+   uv pip install -r requirements.txt
    ```
 3. Postavite vaš OpenRouter API ključ u `.env` datoteku:
    ```
@@ -48,6 +48,20 @@ python story_generator.py -i "putanja/do/crteza.jpg" -n "Emma" -s "pustolovina" 
 - `-s, --style`: Stil priče (basna, naučna fantastika, pustolovina, misterija, komedija, svakodnevni život)
 - `-l, --length`: Dužina priče (kratka, duga)
 
+### Web korisnički interfejs
+Aplikacija takođe nudi web korisnički interfejs sa intuitivnom grafikom i mogućnošću otpremanja slika. Pokrenite web aplikaciju sa:
+```bash
+python main.py
+```
+Zatim otvorite svoj web preglednik i posjetite `http://localhost:8000` ili koristite IP adresu računara na mreži (npr. `http://192.168.1.100:8000`) da biste pristupili interfejsu sa drugih uređaja.
+
+Web interfejs omogućava:
+- Otpremanje dječijih crteža putem jednostavnog prevlačenja i ispuštanja
+- Odabir imena djeteta
+- Odabir između 6 različitih stilova priče sa prikazom ikonica
+- Odabir dužine priče (kratka ili duga)
+- Pregled i kopiranje generisane priče
+
 ## Primjer
 
 ```bash
@@ -63,3 +77,5 @@ Aplikacija rukuje različite uslove greške:
 - Nepodržani formati slike
 - Nedostaje API ključ
 - Mrežne/API greške
+
+Correct according to bosnian grammar.

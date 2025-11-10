@@ -52,11 +52,24 @@ def validate_image_path(image_path: str) -> bool:
 
 def get_story_prompt(child_name: str, style: str, length: str, image_description: str) -> str:
     """Construct the prompt for story generation."""
+    # Map English style names to Bosnian equivalents for use in the prompt
+    style_mapping = {
+        "fairy tale": "basna",
+        "sci-fi": "naučna fantastika",
+        "adventure": "pustolovina",
+        "mystery": "misterija",
+        "comedy": "komedija",
+        "everyday life": "svakodnevni život"
+    }
+    
+    bosnian_style = style_mapping.get(style, style)
+    
+    # Length description is already in Bosnian
     length_description = "5 paragrafa" if length == "short" else "10 paragrafa"
 
     prompt = f"""Napiši maštovitu i zanimljivu priču na bosanskom jeziku za dijete po imenu {child_name} na osnovu ovog crteža: {image_description}.
 
-Priča treba biti u {style} stilu i otprilike {length_description} duga.
+Priča treba biti u {bosnian_style} stilu i otprilike {length_description} duga.
 Uvjeri se da je priča primjerena uzrastu djece, zabavna i da uključuje elemente koje se mogu vidjeti na crtežu.
 Priča treba imati {child_name} kao glavni lik ili nekako povezati crtež sa avanturom {child_name}.
 
@@ -148,12 +161,12 @@ def get_user_input(image_path: Optional[str], child_name: Optional[str], style: 
     valid_styles = ["fairy tale", "sci-fi", "adventure", "mystery", "comedy", "everyday life"]
     if not style:
         print("\nIzaberite stil priče:")
-        print("  1. Basna")
-        print("  2. Sci-Fi")
-        print("  3. Pustolovina")
-        print("  4. Misterija")
-        print("  5. Komedija")
-        print("  6. Svakođevni život")
+        print("  1. Basna (fairy tale)")
+        print("  2. Naučna fantastika (sci-fi)")
+        print("  3. Pustolovina (adventure)")
+        print("  4. Misterija (mystery)")
+        print("  5. Komedija (comedy)")
+        print("  6. Svakodnevni život (everyday life)")
 
         while True:
             try:
@@ -170,8 +183,8 @@ def get_user_input(image_path: Optional[str], child_name: Optional[str], style: 
     # Get story length if not provided via CLI
     if not length:
         print("\nIzaberite dužinu priče:")
-        print("  1. Kratka (oko 5 paragrafa)")
-        print("  2. Duga (oko 10 paragrafa)")
+        print("  1. Kratka (oko 5 paragrafa) - short")
+        print("  2. Duga (oko 10 paragrafa) - long")
 
         while True:
             try:
@@ -212,14 +225,14 @@ def main():
         "-s", "--style",
         type=str,
         choices=["fairy tale", "sci-fi", "adventure", "mystery", "comedy", "everyday life"],
-        help="Story style (fairy tale, sci-fi, adventure, mystery, comedy, everyday life)"
+        help="Stil priče (fairy tale/basna, sci-fi/naučna fantastika, adventure/pustolovina, mystery/misterija, comedy/komedija, everyday life/svakodnevni život)"
     )
 
     parser.add_argument(
         "-l", "--length",
         type=str,
         choices=["short", "long"],
-        help="Story length (short: ~5 paragraphs, long: ~10 paragraphs)"
+        help="Dužina priče (short/kratka: ~5 paragrafa, long/duga: ~10 paragrafa)"
     )
 
     args = parser.parse_args()
