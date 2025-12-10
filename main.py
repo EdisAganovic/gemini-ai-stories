@@ -2,7 +2,7 @@
 FastAPI pozadinska aplikacija za Generator priča za djecu.
 
 Ova aplikacija omogućava korisnicima da otpreme dječje crteže i generiraju priče na bosanskom jeziku
-koristeći OpenRouter API s modelom Polaris Alpha.
+koristeći Google Gemini API.
 """
 
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
@@ -11,10 +11,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 import os
-import uuid
+import io
 from typing import Optional
-import base64
-import openai
+
+import google.generativeai as genai
+from PIL import Image
 
 # Učitavanje varijabli okruženja iz .env datoteke
 from dotenv import load_dotenv
@@ -43,42 +44,31 @@ async def read_root():
         return HTMLResponse(content=f.read())
 
 
-async def generate_story_with_openrouter_api(image_data: bytes, mime_type: str, child_name: str, style: str, length: str) -> str:
-    """Generira priču koristeći OpenRouter API (model Polaris Alpha) na osnovu podataka o slici iz memorije."""
+async def generate_story_with_gemini_api(image_data: bytes, child_name: str, style: str, length: str) -> str:
+    """Generira priču koristeći Google Gemini API na osnovu podataka o slici iz memorije."""
     try:
-        # Konfiguracija OpenAI klijenta za korištenje OpenRoutera
-        client = openai.AsyncOpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=os.environ.get("OPENROUTER_API_KEY"),
-        )
+        # Konfiguracija Gemini API
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY nije postavljen.")
+            
+        genai.configure(api_key=api_key)
 
-        # Kodiranje slike u base64 format za API poziv
-        image_base64 = base64.b64encode(image_data).decode('utf-8')
-        
         # Kreiranje upita (prompta)
         prompt = get_story_prompt(child_name, style, length, "priloženog crteža")
         
-        # Pozivanje OpenRouter API-ja s mogućnošću obrade slika
-        response = await client.chat.completions.create(
-            model="openrouter/polaris-alpha",  # Korištenje modela Polaris Alpha putem OpenRoutera
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:{mime_type};base64,{image_base64}"
-                            }
-                        }
-                    ]
-                }
-            ],
-            max_tokens=2000
-        )
+        # Učitavanje slike iz bajtova
+        image_file = io.BytesIO(image_data)
+        img = Image.open(image_file)
         
-        return response.choices[0].message.content
+        # Odabir modela
+        model = genai.GenerativeModel('gemini-flash-latest')
+        
+        # Generiranje sadržaja (napomena: genai pozivi su obično sinhroni, ali u async funkciji to može blokirati event loop. 
+        # Za produkciju bi trebalo koristiti run_in_executor ili async verziju ako je dostupna, ali za sada je ok.)
+        response = model.generate_content([prompt, img])
+        
+        return response.text
 
     except Exception as e:
         # Proslijeđuje izuzetak da se obradi na višem nivou
@@ -127,9 +117,17 @@ async def generate_story(
         image_content = await image.read()
 
         # Generiranje priče pomoću API funkcije
-        story = await generate_story_with_openrouter_api(image_content, mime_type, child_name, style, length)
+        story = await generate_story_with_gemini_api(image_content, child_name, style, length)
 
-        return {"story": story}
+        # Encode image to base64 for frontend display
+        import base64
+        image_base64 = base64.b64encode(image_content).decode('utf-8')
+
+        return {
+            "story": story,
+            "image_base64": image_base64,
+            "mime_type": mime_type
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Greška prilikom generiranja priče: {str(e)}")

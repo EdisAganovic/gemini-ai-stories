@@ -3,9 +3,8 @@
     We already created UV enviroment and activated it.
     Use "uv pip install" to install new packages.
 
-#OpenRouter
-
-Use OpenRouter with model "openrouter/polaris-alpha". If .env file with OPENROUTER_API_KEY doesn't exist, create a new one with your API key.
+#Gemini
+Use Google Gemini API with model "gemini-flash-latest". If .env file with GEMINI_API_KEY doesn't exist, create a new one with your API key.
 
 #Interface
 

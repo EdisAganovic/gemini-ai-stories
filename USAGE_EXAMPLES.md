@@ -3,16 +3,16 @@
 ## Instalacija
 1. Instalirajte potrebne zavisnosti:
    ```bash
-   pip install -r requirements.txt
+   uv pip install -r requirements.txt
    ```
 
-2. Postavite vaš OpenRouter API ključ kao varijablu okruženja:
+2. Postavite vaš Google Gemini API ključ kao varijablu okruženja:
    ```bash
    # Na Windowsu
-   set OPENROUTER_API_KEY=vaš_api_ključ_ide_ovdje
+   set GEMINI_API_KEY=vaš_api_ključ_ide_ovdje
 
    # Na macOS/Linuxu
-   export OPENROUTER_API_KEY=vaš_api_ključ_ide_ovdje
+   export GEMINI_API_KEY=vaš_api_ključ_ide_ovdje
    ```
 
 ## Korištenje

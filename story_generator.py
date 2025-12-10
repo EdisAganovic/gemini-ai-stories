@@ -2,7 +2,7 @@
 """
 Generator priča za djecu
 
-Ovaj alat koristi OpenRouter API (sa Polaris Alpha modelom) da generiše maštovite priče na osnovu dječijih crteža.
+Ovaj alat koristi Google Gemini API da generiše maštovite priče na osnovu dječijih crteža.
 Sve priče se generišu na bosanskom jeziku.
 """
 
@@ -12,23 +12,12 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-import base64
-import openai
+import google.generativeai as genai
+from PIL import Image
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
 load_dotenv()
-
-
-def encode_image(image_path: str) -> str:
-    """Encode an image file to base64 string."""
-    try:
-        with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode('utf-8')
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Image file not found: {image_path}")
-    except Exception as e:
-        raise e
 
 
 def validate_image_path(image_path: str) -> bool:
@@ -75,7 +64,7 @@ Priča treba imati {child_name} kao glavni lik ili nekako povezati crtež sa ava
 
 Započni priču sa: "Jednom davno, {child_name} je otkrio/la..."
 Za basne stil možeš započeti sa "Priča se događa u jednom dalekom carstvu gdje živi..."
-Završi priču sa: "...i tako se završila izuzetna avantura djeteta {child_name}!"
+Završ priču sa: "...i tako se završila izuzetna avantura djeteta {child_name}!"
 
 Učini priču kreativnom, pozitivnom i primjerenom za djecu. Sav tekst mora biti na bosanskom jeziku."""
 
@@ -83,59 +72,24 @@ Učini priču kreativnom, pozitivnom i primjerenom za djecu. Sav tekst mora biti
 
 
 def generate_story_with_gemini(image_path: str, child_name: str, style: str, length: str) -> str:
-    """Generate a story using the OpenRouter API (Polaris Alpha model)."""
+    """Generate a story using the Google Gemini API."""
     try:
-        # Configure OpenAI to use OpenRouter
-        client = openai.OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=os.environ.get("OPENROUTER_API_KEY"),
-        )
+        # Configure Gemini API
+        genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        # Determine the correct MIME type based on the file extension
-        path = Path(image_path)
-        mime_type_map = {
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.png': 'image/png',
-            '.bmp': 'image/bmp',
-            '.webp': 'image/webp'
-        }
-
-        mime_type = mime_type_map.get(path.suffix.lower())
-        if not mime_type:
-            raise ValueError(f"Unsupported image format: {path.suffix}")
-
-        # Read and encode the image
-        with open(image_path, "rb") as image_file:
-            image_data = image_file.read()
-        
-        # Encode the image to base64 for the API call
-        image_base64 = base64.b64encode(image_data).decode('utf-8')
-        
         # Create the prompt
-        prompt = get_story_prompt(child_name, style, length, "the provided drawing")
+        prompt = get_story_prompt(child_name, style, length, "ovaj crtež")
         
-        # Call the OpenRouter API with vision capabilities
-        response = client.chat.completions.create(
-            model="openrouter/polaris-alpha",  # Using Polaris Alpha model through OpenRouter
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:{mime_type};base64,{image_base64}"
-                            }
-                        }
-                    ]
-                }
-            ],
-            max_tokens=2000
-        )
+        # Load the image
+        img = Image.open(image_path)
         
-        return response.choices[0].message.content
+        # Select the model
+        model = genai.GenerativeModel('gemini-flash-latest')
+        
+        # Generate content
+        response = model.generate_content([prompt, img])
+        
+        return response.text
 
     except Exception as e:
         raise e
@@ -206,7 +160,7 @@ def get_user_input(image_path: Optional[str], child_name: Optional[str], style: 
 def main():
     """Main function to run the CLI Story Generator."""
     parser = argparse.ArgumentParser(
-        description="Generate imaginative stories based on children's drawings using OpenRouter API"
+        description="Generate imaginative stories based on children's drawings using Google Gemini API"
     )
 
     parser.add_argument(
@@ -238,9 +192,9 @@ def main():
     args = parser.parse_args()
 
     # Check for API key
-    if not os.environ.get("OPENROUTER_API_KEY"):
-        print("Error: OPENROUTER_API_KEY environment variable is not set.")
-        print("Please set your OpenRouter API key before running this application.")
+    if not os.environ.get("GEMINI_API_KEY"):
+        print("Error: GEMINI_API_KEY environment variable is not set.")
+        print("Please set your Google Gemini API key before running this application.")
         sys.exit(1)
 
     try:

@@ -1,6 +1,6 @@
 # Generator priča za djecu
 
-Ovaj alat pretvara dječije crteže u fantastične priče koristeći OpenRouter API (sa Google Gemini modelom). Kreira personalizovane priče koje uključuju vizuelne elemente iz slike sa imenom djeteta i željenim stilom priče.
+Ovaj alat pretvara dječije crteže u fantastične priče koristeći Google Gemini API. Kreira personalizovane priče koje uključuju vizuelne elemente iz slike sa imenom djeteta i željenim stilom priče.
 
 ## Značajke
 
@@ -14,7 +14,7 @@ Ovaj alat pretvara dječije crteže u fantastične priče koristeći OpenRouter 
 ## Preduvjeti
 
 - Python 3.7 ili noviji
-- OpenRouter API ključ
+- Google Gemini API ključ
 
 ## Instalacija
 
@@ -23,9 +23,9 @@ Ovaj alat pretvara dječije crteže u fantastične priče koristeći OpenRouter 
    ```bash
    uv pip install -r requirements.txt
    ```
-3. Postavite vaš OpenRouter API ključ u `.env` datoteku:
+3. Postavite vaš Google Gemini API ključ u `.env` datoteku:
    ```
-   OPENROUTER_API_KEY=vaš_pravi_api_ključ_ide_ovdje
+   GEMINI_API_KEY=vaš_pravi_api_ključ_ide_ovdje
    ```
 
 ## Korištenje
