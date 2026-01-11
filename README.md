@@ -1,81 +1,83 @@
 # Generator priča za djecu
 
-Ovaj alat pretvara dječije crteže u fantastične priče koristeći Google Gemini API. Kreira personalizovane priče koje uključuju vizuelne elemente iz slike sa imenom djeteta i željenim stilom priče.
+![Screenshot aplikacije](Screenshot1.png)
 
-## Značajke
+Ovaj alat pretvara dječije crteže u fantastične priče koristeći Google Gemini API. Kreira personalizirane priče koje uključuju vizualne elemente sa slike, ime djeteta i željeni stil priče.
 
-- Prihvata JPG, PNG, BMP, ili WebP datoteke slika
-- Personalizuje priče sa imenom djeteta
-- Nudi 6 stilova priče: Basna, Naučna fantastika, Pustolovina, Misterija, Komedija, i Svakodnevni život
-- Dozvoljava izbor kratkih (~5 paragrafa) ili dugih (~10 paragrafa) priča
-- Kreira priče prikladne za djecu i zanimljive na osnovu crteža
-- Podržava interaktivni režim i CLI argumente
+## Karakteristike
 
-## Preduvjeti
+- 🖼️ **Analiza slike**: Prihvata JPG, PNG, BMP ili WebP datoteke.
+- 👧 **Personalizacija**: Kreira priče sa imenom djeteta kao glavnim likom.
+- 🎨 **Raznovrsni stilovi**: Nudi 6 stilova: Basna, Naučna fantastika, Pustolovina, Misterija, Komedija i Svakodnevni život.
+- 📏 **Prilagodljiva dužina**: Izbor između kratkih (~5 paragrafa) ili dugih (~10 paragrafa) priča.
+- ⚙️ **Napredna konfiguracija**: Mogućnost odabira Gemini modela, temperature (kreativnosti) i prilagođenih instrukcija (Custom Prompt).
+- 🖥️ **Moderni UI**: Jednostavan i intuitivan web interfejs.
+
+## Preuzimanje (za Windows korisnike)
+
+Ako ne želite instalirati Python i ostale alate, možete jednostavno preuzeti gotovu aplikaciju (.exe) sa naše GitHub stranice:
+
+👉 **[Preuzmi najnoviju verziju](https://github.com/EdisAganovic/ai-stories/releases/)**
+
+Jednostavno preuzmite `.exe` datoteku i pokrenite je. Nije potrebna instalacija Pythona.
+
+Za korištenje će vam biti potreban besplatan Gemini API ključ koji možete dobiti na [Google AI Studio](https://aistudio.google.com/).
+
+## Preduslovi
 
 - Python 3.7 ili noviji
-- Google Gemini API ključ
+- Google Gemini API ključ (možete ga besplatno dobiti na [Google AI Studio](https://aistudio.google.com/))
 
 ## Instalacija
 
-1. Klonirajte ili preuzmite ovaj repozitorij
-2. Instalirajte potrebne zavisnosti koristeći UV:
+1. Klonirajte ili preuzmite ovaj repozitorij.
+2. Instalirajte potrebne zavisnosti koristeći `uv` (preporučeno) ili `pip`:
    ```bash
    uv pip install -r requirements.txt
    ```
-3. Postavite vaš Google Gemini API ključ u `.env` datoteku:
-   ```
-   GEMINI_API_KEY=vaš_pravi_api_ključ_ide_ovdje
+   *Ili standardno:*
+   ```bash
+   pip install -r requirements.txt
    ```
 
 ## Korištenje
 
-### Interaktivni režim
-Jednostavno pokrenite skriptu i slijedite upute:
-```bash
-python story_generator.py
-```
-
-### Režim CLI argumenata
-Možete pružiti sve parametre kao CLI argumente:
-```bash
-python story_generator.py -i "putanja/do/crteza.jpg" -n "Emma" -s "pustolovina" -l "duga"
-```
-
-#### Dostupni argumenti
-- `-i, --image`: Putanja do dječijeg crteža (JPG, PNG, BMP, ili WebP)
-- `-n, --name`: Dječije ime
-- `-s, --style`: Stil priče (basna, naučna fantastika, pustolovina, misterija, komedija, svakodnevni život)
-- `-l, --length`: Dužina priče (kratka, duga)
-
-### Web korisnički interfejs
-Aplikacija takođe nudi web korisnički interfejs sa intuitivnom grafikom i mogućnošću otpremanja slika. Pokrenite web aplikaciju sa:
+### Pokretanje aplikacije
+Jednostavno pokrenite glavnu skriptu:
 ```bash
 python main.py
 ```
-Zatim otvorite svoj web preglednik i posjetite `http://localhost:8000` ili koristite IP adresu računara na mreži (npr. `http://192.168.1.100:8000`) da biste pristupili interfejsu sa drugih uređaja.
 
-Web interfejs omogućava:
-- Otpremanje dječijih crteža putem jednostavnog prevlačenja i ispuštanja
-- Odabir imena djeteta
-- Odabir između 6 različitih stilova priče sa prikazom ikonica
-- Odabir dužine priče (kratka ili duga)
-- Pregled i kopiranje generisane priče
+Aplikacija će automatski pokušati otvoriti vaš zadani web pretraživač na adresi `http://localhost:8000`. Ako se to ne desi, ručno otvorite tu adresu.
 
-## Primjer
+### Generisanje priče
+1. **Učitajte crtež**: Kliknite na područje za učitavanje ili prevucite sliku djetetovog crteža.
+2. **Unesite ime**: Upišite ime djeteta.
+3. **Odaberite stil**: Kliknite na ikonicu željenog stila priče.
+4. **Odaberite dužinu**: Odaberite "Kratka" ili "Duga".
+5. **Generiši**: Kliknite na dugme "Generiši Priču".
 
-```bash
-python story_generator.py -i "moj_crtez.png" -n "Amar" -s "basna" -l "kratka"
-```
+## Konfiguracija i postavke
 
-Ovo će generisati kratku basnu za Amara na osnovu datog crteža.
+![Screenshot aplikacije](Screenshot2.png)
+
+Klikom na ikonicu zupčanika (⚙️) u gornjem desnom uglu otvarate meni sa postavkama:
+
+- **API Ključ**: Ovdje unosite svoj Google Gemini API ključ. Ključ se čuva lokalno u `config.json`.
+- **Gemini Model**: Možete ručno upisati naziv modela koji želite koristiti (npr. `gemini-1.5-flash`, `gemini-1.5-pro`).
+- **Custom Prompt**: Ovdje možete definisati vlastiti šablon za generisanje priča ako želite specifičnu strukturu. Koristite `{child_name}`, `{style}`, `{length}` i `{image_description}` kao varijable.
+- **Temperatura**: Klizač za podešavanje "kreativnosti" modela. Niže vrijednosti daju preciznije, a više vrijednosti maštovitije rezultate.
+
+## Struktura projekta
+
+- `main.py`: Glavna FastAPI backend aplikacija.
+- `static/`: Sadrži CSS, JavaScript i slike za frontend.
+- `templates/`: Sadrži HTML šablone.
+- `config.json`: Lokalna datoteka za čuvanje postavki (kreira se automatski).
 
 ## Rukovanje greškama
 
-Aplikacija rukuje različite uslove greške:
-- Neispravne putanje do datoteke slike
-- Nepodržani formati slike
-- Nedostaje API ključ
-- Mrežne/API greške
-
-Correct according to bosnian grammar.
+Aplikacija će vas obavijestiti ako:
+- Nedostaje API ključ.
+- Format slike nije podržan.
+- Dođe do greške u komunikaciji sa Google Gemini serverima.
