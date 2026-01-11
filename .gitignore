@@ -138,8 +138,6 @@ Thumbs.db
 .env
 /uploads/
 /test_*.py
-*.jpg
-*.png
 *.bmp
 *.webp
 *.webp
